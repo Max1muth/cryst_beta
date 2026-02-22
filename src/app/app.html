@@ -1,32 +1,31 @@
 <div #rendererContainer class="sphere-wrapper"></div>
-<div class="ui-panel">
+
+<div class="ui-panel left-panel">
   <h3>Навигация ABC</h3>
-  
   <div class="control">
-    <div class="label-row">
-      <label>Ось A (Z)</label>
-      <span class="val">{{ rotation.A.toFixed(2) }}</span>
-    </div>
-    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation.A">
+    <div class="label-row"><label>Ось A (Синяя Z)</label><span class="val">{{ rotation['A'].toFixed(2) }}</span></div>
+    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation['A']">
   </div>
-
   <div class="control">
-    <div class="label-row">
-      <label>Ось B (X)</label>
-      <span class="val">{{ rotation.B.toFixed(2) }}</span>
-    </div>
-    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation.B">
+    <div class="label-row"><label>Ось B (Красная X)</label><span class="val">{{ rotation['B'].toFixed(2) }}</span></div>
+    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation['B']">
   </div>
-
   <div class="control">
-    <div class="label-row">
-      <label>Ось C (Y)</label>
-      <span class="val">{{ rotation.C.toFixed(2) }}</span>
-    </div>
-    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation.C">
+    <div class="label-row"><label>Ось C (Зеленая Y)</label><span class="val">{{ rotation['C'].toFixed(2) }}</span></div>
+    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation['C']">
   </div>
-  
-  <button (click)="resetRotation()" class="reset-btn">Сброс</button>
+  <button (click)="resetRotation()" class="reset-btn">Сбросить вид</button>
 </div>
 
-<div #rendererContainer class="sphere-wrapper"></div>
+<div class="ui-panel right-panel">
+  <h3>Направление</h3>
+  <div class="input-grid">
+    <div class="input-col"><label>A (Z)</label><input type="number" [(ngModel)]="newDir.z" placeholder="0"></div>
+    <div class="input-col"><label>B (X)</label><input type="number" [(ngModel)]="newDir.x" placeholder="0"></div>
+    <div class="input-col"><label>C (Y)</label><input type="number" [(ngModel)]="newDir.y" placeholder="0"></div>
+  </div>
+  <div class="action-buttons">
+    <button (click)="addCustomDirection()" class="add-btn">Добавить</button>
+    <button (click)="undoLastDirection()" class="undo-btn">Откат</button>
+  </div>
+</div>
