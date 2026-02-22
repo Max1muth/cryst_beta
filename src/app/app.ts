@@ -15,9 +15,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 export class AppComponent implements AfterViewInit, OnDestroy {
   @ViewChild('rendererContainer') rendererContainer!: ElementRef;
 
-  // Соответствие: A -> Z (Синяя), B -> X (Красная), C -> Y (Зеленая)
+  // Порядок в UI и вращение: A (Z), B (X), C (Y)
   public rotation: { [key: string]: number } = { A: 0, B: 0, C: 0 };
-  public newDir = { x: '', y: '', z: '' };
+  public newDir = { a: '', b: '', c: '' };
 
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
@@ -51,15 +51,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   public addCustomDirection() {
-    const x = parseFloat(this.newDir.x || '0');
-    const y = parseFloat(this.newDir.y || '0');
-    const z = parseFloat(this.newDir.z || '0');
+    const valA = parseFloat(this.newDir.a || '0'); // На нас (Z)
+    const valB = parseFloat(this.newDir.b || '0'); // Вправо (X)
+    const valC = parseFloat(this.newDir.c || '0'); // Вверх (Y)
 
-    if (x === 0 && y === 0 && z === 0) return;
+    if (valA === 0 && valB === 0 && valC === 0) return;
 
-    // Важно: создаем вектор в тех же координатах, что и основные оси
-    const vec = new THREE.Vector3(x, y, z);
-    const label = `${x}|${y}|${z}`;
+    // ВАЖНО: Мапинг в правую тройку Three.js
+    // A -> Z, B -> X, C -> Y
+    const vec = new THREE.Vector3(valB, valC, valA);
+    
+    const label = `${valA}|${valB}|${valC}`;
     const color = new THREE.Color().setHSL(Math.random(), 0.8, 0.6);
     const norm = vec.clone().normalize();
     
@@ -74,13 +76,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     );
     dot.position.copy(norm.clone().multiplyScalar(4));
     
-    const canvas = this.createCanvasLabel(label, 34, color.getHex(), true);
+    const canvas = this.createCanvasLabel(label, 36, color.getHex(), true);
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
     sprite.position.copy(norm.clone().multiplyScalar(4.4));
-    sprite.scale.set(0.8, 0.4, 1);
+    sprite.scale.set(0.9, 0.45, 1);
 
     this.customGroup.add(line, dot, sprite);
-    this.newDir = { x: '', y: '', z: '' };
+    this.newDir = { a: '', b: '', c: '' };
     this.cdr.detectChanges();
   }
 
@@ -98,41 +100,36 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const container = this.rendererContainer.nativeElement;
     
     this.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    this.camera.position.set(6, 6, 10);
+    this.camera.position.set(8, 6, 8); // Удобный ракурс на правую тройку
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, precision: "highp" });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(this.renderer.domElement);
 
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-    const light = new THREE.PointLight(0xffffff, 150);
-    light.position.set(10, 10, 10);
-    this.scene.add(light);
-
+    this.scene.add(new THREE.AmbientLight(0xffffff, 1));
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
   }
 
   private createSceneObjects() {
     this.mainGroup = new THREE.Group();
-    // Устанавливаем порядок вращения ZYX для соответствия A(Z), B(X), C(Y)
-    this.mainGroup.rotation.order = 'ZYX'; 
+    this.mainGroup.rotation.order = 'ZYX'; // Порядок для кристаллографии
     this.customGroup = new THREE.Group();
     this.mainGroup.add(this.customGroup);
 
     this.mainGroup.add(new THREE.Mesh(
       new THREE.SphereGeometry(3, 64, 64),
-      new THREE.MeshStandardMaterial({ color: 0x444444, wireframe: true, transparent: true, opacity: 0.1 })
+      new THREE.MeshStandardMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.05 })
     ));
 
     const axes = new THREE.AxesHelper(5);
     this.scene.add(axes);
 
-    // Подписи осей теперь жестко привязаны к цветам Three.js
-    this.addAxisLabel('B (X)', new THREE.Vector3(5.5, 0, 0), 0xff4444); 
-    this.addAxisLabel('C (Y)', new THREE.Vector3(0, 5.5, 0), 0x44ff44); 
-    this.addAxisLabel('A (Z)', new THREE.Vector3(0, 0, 5.5), 0x4444ff); 
+    // Подписи осей в правой тройке
+    this.addAxisLabel('A', new THREE.Vector3(0, 0, 5.5), 0x4444ff); // Z
+    this.addAxisLabel('B', new THREE.Vector3(5.5, 0, 0), 0xff4444); // X
+    this.addAxisLabel('C', new THREE.Vector3(0, 5.5, 0), 0x44ff44); // Y
 
     this.scene.add(this.mainGroup);
   }
@@ -141,42 +138,38 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
     canvas.width = 512; canvas.height = 256;
-    ctx.font = `${isMono ? '' : 'Bold'} ${fontSize * 2}px ${isMono ? 'monospace' : 'Arial'}`;
+    ctx.font = `Bold ${fontSize * 2}px monospace`;
     ctx.fillStyle = `#${new THREE.Color(color).getHexString()}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    if (!isMono) {
-      ctx.fillText(text, 256, 128);
-    } else {
-      const charWidth = (fontSize * 2) * 0.6;
-      const cleanText = text.replace(/-/g, '');
-      let currentX = 256 - (cleanText.length * charWidth) / 2 + charWidth / 2;
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        if (char === '-') {
-          ctx.fillRect(currentX - charWidth/2 + 5, 128 - (fontSize * 2)/1.8, charWidth - 10, (fontSize * 2)/8);
-        } else {
-          ctx.fillText(char, currentX, 128);
-          currentX += charWidth;
-        }
+    const charWidth = (fontSize * 2) * 0.7;
+    const cleanText = text.replace(/-/g, '');
+    let currentX = 256 - (cleanText.length * charWidth) / 2 + charWidth / 2;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char === '-') {
+        ctx.fillRect(currentX - charWidth/2 + 5, 128 - (fontSize * 1.1), charWidth - 10, 8);
+      } else {
+        ctx.fillText(char, currentX, 128);
+        currentX += charWidth;
       }
     }
     return canvas;
   }
 
   private addAxisLabel(text: string, position: THREE.Vector3, color: number) {
-    const canvas = this.createCanvasLabel(text, 50, color);
+    const canvas = this.createCanvasLabel(text, 60, color);
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
     sprite.position.copy(position);
-    sprite.scale.set(1.2, 0.6, 1);
+    sprite.scale.set(0.8, 0.4, 1);
     this.scene.add(sprite);
   }
 
   private animate() {
     this.frameId = requestAnimationFrame(() => this.animate());
     if (this.mainGroup) {
-      // Применяем вращения
       this.mainGroup.rotation.z = this.rotation['A'];
       this.mainGroup.rotation.x = this.rotation['B'];
       this.mainGroup.rotation.y = this.rotation['C'];
@@ -186,9 +179,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngZone.runOutsideAngular(() => {
-      if (this.frameId) cancelAnimationFrame(this.frameId);
-      this.renderer.dispose();
-    });
+    if (this.frameId) cancelAnimationFrame(this.frameId);
+    this.renderer.dispose();
   }
 }
