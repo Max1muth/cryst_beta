@@ -1,23 +1,46 @@
 <div #rendererContainer class="sphere-wrapper"></div>
 
 <div class="ui-panel left-panel">
-  <h3>Навигация [A B C]</h3>
-  <div class="control" *ngFor="let axis of ['A', 'B', 'C']">
-    <div class="label-row"><label>Ось {{axis}}</label><span class="val">{{ rotation[axis].toFixed(2) }}</span></div>
-    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation[axis]">
+  <h3>Навигация ABC</h3>
+  
+  <div class="control" *ngFor="let axis of [
+    {id: 'A', label: 'Ось A', color: '#4444ff'},
+    {id: 'B', label: 'Ось B', color: '#ff4444'},
+    {id: 'C', label: 'Ось C', color: '#44ff44'}
+  ]">
+    <div class="label-row">
+      <label [style.color]="axis.color">{{ axis.label }}</label>
+      <span class="val">{{ rotation[axis.id].toFixed(2) }}</span>
+    </div>
+    <input type="range" min="0" max="6.28" step="0.01" [(ngModel)]="rotation[axis.id]">
   </div>
-  <button (click)="resetRotation()" class="reset-btn">Сброс</button>
+
+  <button (click)="resetRotation()" class="reset-btn">Сбросить вид</button>
 </div>
 
 <div class="ui-panel right-panel">
   <h3>Направление</h3>
+  
   <div class="input-grid">
-    <div class="input-col"><label>A</label><input type="number" [(ngModel)]="newDir.a" placeholder="0"></div>
-    <div class="input-col"><label>B</label><input type="number" [(ngModel)]="newDir.b" placeholder="0"></div>
-    <div class="input-col"><label>C</label><input type="number" [(ngModel)]="newDir.c" placeholder="0"></div>
+    <div class="input-col"><label>A</label><input type="number" [(ngModel)]="newDir.z" placeholder="0"></div>
+    <div class="input-col"><label>B</label><input type="number" [(ngModel)]="newDir.x" placeholder="0"></div>
+    <div class="input-col"><label>C</label><input type="number" [(ngModel)]="newDir.y" placeholder="0"></div>
   </div>
+
   <div class="action-buttons">
-    <button (click)="addCustomDirection()" class="add-btn">Добавить</button>
+    <button (click)="addCustomDirection()" class="add-btn">ДОБАВИТЬ</button>
     <button (click)="undoLastDirection()" class="undo-btn">Откат</button>
+  </div>
+
+  <div class="results-box" *ngIf="lastCalculated">
+    <div class="res-header">Точка протыкания сферы:</div>
+    <div class="res-row">
+      <span>Полярный (θ):</span>
+      <span class="res-val">{{ lastCalculated.polar.toFixed(1) }}°</span>
+    </div>
+    <div class="res-row">
+      <span>Азимутальный (φ):</span>
+      <span class="res-val">{{ lastCalculated.azimuth.toFixed(1) }}°</span>
+    </div>
   </div>
 </div>
