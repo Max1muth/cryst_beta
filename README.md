@@ -1,5 +1,7 @@
 # Cryst
 
+<называется лень делать кликабильную ссылку на странице => https://script.google.com/macros/s/AKfycbzmcB71ZRUwyjLeNeQZjeN-T_489GkWNJtxl3D3jAF0Hru75pmCK12OGaALomny9Q92/exec
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
 
 ## Development server
